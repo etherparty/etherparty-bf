@@ -16,7 +16,7 @@ botuser = 'botuser'
 botpass = 'botpass'
 
 #Reddit inbox feed (see https://www.reddit.com/prefs/feeds/, "your inbox" => "everything"
-FEED_URL="http://www.reddit.com/message/inbox/.json?feed={key}&user={user}"
+FEED_URL="http://www.reddit.com/message/unread/.json?feed={key}&user={user}"
 
 r2 = praw.Reddit('blocktrailbot')
 r2.set_oauth_app_info(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
@@ -55,16 +55,20 @@ while True:
           print 'got address data.', [address]
           d = client.address(address)
 
-          print 'attempting login.'
-          r2.login(botuser, botpass)
+          try:
+            print 'attempting login.'
+            r2.login(botuser, botpass)
 
-          if r2.is_logged_in():
-            print 'logged in, submitting comment.'
-            c.reply(address + '\'s balance is currently: ' + blocktrail.to_btc(d['balance']) + 'BTC. API provided by www.blocktrail.com' )
+            if r2.is_logged_in():
+              print 'logged in, submitting comment.'
+              c.reply(address + '\'s balance is currently: ' + blocktrail.to_btc(d['balance']) + 'BTC. API provided by www.blocktrail.com' )
+              c.mark_as_read()
 
-          if min_elapsed > 3000:
-            print 'refreshing access.'
-            r2.refresh_access_information();
+            if min_elapsed > 3000:
+              print 'refreshing access.'
+              r2.refresh_access_information();
+          except Exception, e:
+            print 'error', e
           
           min_elapsed += 600
           print 'done.'
